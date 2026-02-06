@@ -38,9 +38,11 @@ def save_memories(memories: list):
         json.dump(memories, f, indent=2)
 
 
-def add_memory(text: str) -> dict:
+def add_memory(text: str, source: Optional[str] = None) -> dict:
     memories = load_memories()
     entry = {"text": text, "timestamp": datetime.now().isoformat()}
+    if source:
+        entry["source"] = source
     memories.append(entry)
     save_memories(memories)
     return entry

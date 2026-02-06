@@ -18,6 +18,7 @@ router = APIRouter()
 
 class MessageRequest(BaseModel):
     text: str
+    source: Optional[str] = None
 
 class ForgetRequest(BaseModel):
     query: str
@@ -55,8 +56,19 @@ async def receive_message(req: MessageRequest):
     if not text:
         raise HTTPException(status_code=400, detail="Empty message")
 
-    # 1. Remember
-    memory.add_memory(text)
+    source = req.source
+
+    # 1. Remember (with source tag)
+    memory.add_memory(text, source=source)
+
+    # Self-sent prompts from Claude Code: remember silently, no classification
+    if source == "claude-code":
+        return MessageResponse(
+            remembered=True,
+            reply=None,
+            notification_sent=False,
+            classification={"notify": False, "reason": "self-sent (claude-code)", "summary": ""},
+        )
 
     # 2. Classify with Haiku
     notification_sent = False
