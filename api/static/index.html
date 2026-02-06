@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Charles</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-2: #1e1e1e;
+            --surface-3: #282828;
+            --border: #2a2a2a;
+            --text: #e8e8e8;
+            --text-dim: #888;
+            --text-muted: #555;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --orange: #f59e0b;
+            --orange-dim: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.15);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* Header */
+        header {
+            padding: 24px 0 16px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* Status bar */
+        .status-bar {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .status-bar::-webkit-scrollbar { display: none; }
+
+        .stat {
+            flex: 1;
+            min-width: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .stat-green .stat-value { color: var(--green); }
+        .stat-orange .stat-value { color: var(--orange); }
+        .stat-blue .stat-value { color: var(--blue); }
+
+        /* How it works */
+        .section {
+            margin: 20px 0;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+
+        .flow {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .flow-step:last-child { border-bottom: none; }
+
+        .flow-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            width: 32px;
+            text-align: center;
+        }
+
+        .flow-content h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .flow-content p {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .flow-arrow {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 2px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Try it */
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 12px 20px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:active { opacity: 0.8; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-weight: 500;
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+
+        /* Result card */
+        .result {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .result.visible { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .result-row + .result-row {
+            border-top: 1px solid var(--border);
+        }
+
+        .result-key {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .result-val {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-orange { background: var(--orange-dim); color: var(--orange); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+        /* Memories list */
+        .memories-list {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .memories-list.visible { display: block; animation: fadeIn 0.3s ease; }
+
+        .memory-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .memory-item:last-child { border-bottom: none; }
+
+        .memory-text { margin-bottom: 2px; }
+
+        .memory-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            padding: 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* Architecture diagram */
+        .arch {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            color: var(--text-dim);
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .arch .hl { color: var(--accent); }
+        .arch .gr { color: var(--green); }
+        .arch .or { color: var(--orange); }
+        .arch .rd { color: var(--red); }
+
+        /* Endpoints table */
+        .endpoints {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .endpoint-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .endpoint-row:last-child { border-bottom: none; }
+
+        .method {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .method-get { background: var(--green-dim); color: var(--green); }
+        .method-post { background: var(--blue-dim); color: var(--blue); }
+
+        .endpoint-path {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .endpoint-desc {
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-left: auto;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 24px;
+            padding: 20px 0 32px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        footer a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Pulse dot for live status */
+        .pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            margin-right: 6px;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Responsive */
+        @media (max-width: 360px) {
+            .stat { padding: 10px 8px; }
+            .stat-value { font-size: 18px; }
+            .endpoint-desc { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🧠</div>
+            <h1>Charles</h1>
+            <p class="subtitle"><span class="pulse"></span>Smart Notification Gateway</p>
+        </header>
+
+        <!-- Stats -->
+        <div class="status-bar">
+            <div class="stat stat-blue">
+                <div class="stat-value" id="s-memories">-</div>
+                <div class="stat-label">Memories</div>
+            </div>
+            <div class="stat stat-orange">
+                <div class="stat-value" id="s-notifs">-</div>
+                <div class="stat-label">Notifs today</div>
+            </div>
+            <div class="stat stat-green">
+                <div class="stat-value" id="s-responses">-</div>
+                <div class="stat-label">Responses</div>
+            </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="section">
+            <div class="section-title">How it works</div>
+            <div class="flow">
+                <div class="flow-step">
+                    <div class="flow-icon">💬</div>
+                    <div class="flow-content">
+                        <h3>Anyone sends a message</h3>
+                        <p>CLI, curl, this page &mdash; 2000+ calls/day, no problem</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">&#8595;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">🧹</div>
+                    <div class="flow-content">
+                        <h3>Haiku bullshit filter</h3>
+                        <p>Claude classifies: is this worth Charles Dana's time? 99% noise rejected</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">&#8595;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">📱</div>
+                    <div class="flow-content">
+                        <h3>Telegram push (max 3/day)</h3>
+                        <p>Only genuinely important messages get through. Three buttons: Yes / No / Prompt</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">&#8595;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">🔄</div>
+                    <div class="flow-content">
+                        <h3>Feedback loop</h3>
+                        <p>Charles Dana's responses train the filter &mdash; it gets smarter over time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture -->
+        <div class="section">
+            <div class="section-title">Architecture</div>
+            <div class="arch"><span class="hl">charles</span> "hey, prod is down"
+    │
+    ▼  POST /message
+<span class="gr">charles.aws.monce.ai</span>
+    │
+    ├─ <span class="hl">remember</span> in memories.json
+    ├─ <span class="or">haiku</span> classifies: notify?
+    │   └─ important + <span class="rd">count < 3</span>
+    │       └─ <span class="gr">telegram push</span> ──→ 📱
+    │           ├─ [Yes]
+    │           ├─ [No]
+    │           └─ [Prompt] → response
+    │                          └─ <span class="hl">stored</span> → smarter filter
+    └─ reply</div>
+        </div>
+
+        <!-- Try it -->
+        <div class="section">
+            <div class="section-title">Try it</div>
+            <div class="input-group">
+                <input type="text" id="msg-input" placeholder="say something to charles..." autocomplete="off">
+                <button id="msg-btn" onclick="sendMessage()">Send</button>
+            </div>
+            <div class="result" id="msg-result">
+                <div class="result-row">
+                    <span class="result-key">Remembered</span>
+                    <span class="result-val" id="r-remembered"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Notify?</span>
+                    <span class="result-val" id="r-notify"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Reason</span>
+                    <span class="result-val" id="r-reason"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-key">Reply</span>
+                    <span class="result-val" id="r-reply" style="max-width: 260px; word-wrap: break-word; text-align: right;"></span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" onclick="loadMemories()">View memories</button>
+                <input type="text" id="forget-input" placeholder="forget..." style="flex:1; font-size: 12px; padding: 8px 12px;">
+                <button class="btn-secondary" onclick="forgetMemory()" style="color: var(--red);">Forget</button>
+            </div>
+            <div class="memories-list" id="memories-list" style="margin-top: 12px;"></div>
+        </div>
+
+        <!-- Endpoints -->
+        <div class="section">
+            <div class="section-title">API Endpoints</div>
+            <div class="endpoints">
+                <div class="endpoint-row">
+                    <span class="method method-get">GET</span>
+                    <span class="endpoint-path">/health</span>
+                    <span class="endpoint-desc">status + stats</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method method-post">POST</span>
+                    <span class="endpoint-path">/message</span>
+                    <span class="endpoint-desc">remember + classify</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method method-post">POST</span>
+                    <span class="endpoint-path">/forget</span>
+                    <span class="endpoint-desc">remove memories</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method method-get">GET</span>
+                    <span class="endpoint-path">/memories</span>
+                    <span class="endpoint-desc">list all</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method method-post">POST</span>
+                    <span class="endpoint-path">/webhook/telegram</span>
+                    <span class="endpoint-desc">bot callback</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLI -->
+        <div class="section">
+            <div class="section-title">CLI Usage</div>
+            <div class="arch"><span class="hl">$</span> charles "hey is charles dana around?"
+<span class="gr">→ remembered, classified, maybe notified</span>
+
+<span class="hl">$</span> charles forget coffee
+<span class="or">→ Forgot 2 memories about "coffee"</span>
+
+<span class="hl">$</span> curl <span class="gr">https://charles.aws.monce.ai</span>/health
+<span class="or">→ {"status":"ok","memories":42,...}</span></div>
+        </div>
+
+        <footer>
+            charles.aws.monce.ai &middot; <a href="/docs">API docs</a> &middot; <a href="/health">health</a>
+        </footer>
+    </div>
+
+    <script>
+        // Load stats on page load
+        async function loadHealth() {
+            try {
+                const r = await fetch('/health');
+                const d = await r.json();
+                document.getElementById('s-memories').textContent = d.memories;
+                document.getElementById('s-notifs').textContent = d.notifications_today + '/' + d.max_notifications;
+                document.getElementById('s-responses').textContent = d.responses;
+            } catch(e) {
+                document.getElementById('s-memories').textContent = '?';
+            }
+        }
+        loadHealth();
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const btn = document.getElementById('msg-btn');
+            const text = input.value.trim();
+            if (!text) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+
+            try {
+                const r = await fetch('/message', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text})
+                });
+                const d = await r.json();
+
+                document.getElementById('r-remembered').innerHTML = d.remembered
+                    ? '<span class="badge badge-green">yes</span>'
+                    : '<span class="badge badge-red">no</span>';
+
+                const notify = d.classification?.notify;
+                document.getElementById('r-notify').innerHTML = notify
+                    ? '<span class="badge badge-orange">yes' + (d.notification_sent ? ' (sent!)' : '') + '</span>'
+                    : '<span class="badge badge-blue">no</span>';
+
+                document.getElementById('r-reason').textContent = d.classification?.reason || '-';
+                document.getElementById('r-reply').textContent = d.reply || '-';
+                document.getElementById('msg-result').classList.add('visible');
+
+                input.value = '';
+                loadHealth();
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Send';
+        }
+
+        // Load memories
+        async function loadMemories() {
+            const list = document.getElementById('memories-list');
+            list.classList.add('visible');
+            list.innerHTML = '<div class="empty-state"><span class="spinner"></span></div>';
+
+            try {
+                const r = await fetch('/memories?limit=30');
+                const d = await r.json();
+
+                if (d.memories.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No memories yet</div>';
+                    return;
+                }
+
+                list.innerHTML = d.memories.map(m => `
+                    <div class="memory-item">
+                        <div class="memory-text">${esc(m.text)}</div>
+                        <div class="memory-time">${timeAgo(m.timestamp)}</div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                list.innerHTML = '<div class="empty-state">Failed to load</div>';
+            }
+        }
+
+        // Forget
+        async function forgetMemory() {
+            const input = document.getElementById('forget-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            try {
+                const r = await fetch('/forget', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query})
+                });
+                const d = await r.json();
+                input.value = '';
+                alert('Forgot ' + d.forgotten + ' memory(s) about "' + d.query + '"');
+                loadHealth();
+                loadMemories();
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Enter to send
+        document.getElementById('msg-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        document.getElementById('forget-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') forgetMemory();
+        });
+
+        // Helpers
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function timeAgo(ts) {
+            const s = Math.floor((Date.now() - new Date(ts + 'Z')) / 1000);
+            if (s < 60) return 'just now';
+            if (s < 3600) return Math.floor(s/60) + 'm ago';
+            if (s < 86400) return Math.floor(s/3600) + 'h ago';
+            return Math.floor(s/86400) + 'd ago';
+        }
+    </script>
+</body>
+</html>
