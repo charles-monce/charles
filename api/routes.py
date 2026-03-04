@@ -160,19 +160,38 @@ async def telegram_webhook(request: Request):
 
         return {"ok": True}
 
-    # Handle text message (reply to "Prompt required")
+    # Handle text message
     if "message" in body:
         msg = body["message"]
         text = msg.get("text", "")
+        chat_id = str(msg.get("chat", {}).get("id", ""))
         reply_to = msg.get("reply_to_message", {})
 
-        if text and reply_to:
-            # This is a response to a prompt
+        if not text:
+            return {"ok": True}
+
+        # Reply to "Prompt required" — save as Charles Dana's response
+        if reply_to:
             original_text = reply_to.get("text", "")
-            # Extract summary from the original prompt message
             summary = original_text.replace("Type your response for: _", "").rstrip("_")
             memory.save_response(text, summary)
             logger.info(f"Charles Dana responded: {text} (re: {summary})")
+            return {"ok": True}
+
+        # Regular chat message — only from the configured chat
+        if chat_id == notifications.config.telegram_chat_id:
+            # Remember what Charles Dana says (source: telegram)
+            memory.add_memory(text, source="telegram")
+
+            # Generate reply via Haiku and remember the exchange
+            try:
+                reply = chat_response(text)
+                if reply:
+                    notifications.send_message(reply)
+                    memory.add_memory(f"[charles replied] {reply}", source="telegram")
+            except Exception as e:
+                logger.error(f"Telegram chat error: {e}")
+                notifications.send_message(f"Oops, brain glitch: {e}")
 
         return {"ok": True}
 

@@ -122,6 +122,20 @@ def handle_callback(callback_data: str, message_id: int) -> dict:
     return {"action": "unknown", "needs_text": False, "summary": summary}
 
 
+def send_message(text: str, parse_mode: str = "Markdown") -> dict:
+    """Send a plain text message to the configured Telegram chat."""
+    if not config.telegram_bot_token or not config.telegram_chat_id:
+        return {"sent": False, "reason": "Telegram not configured"}
+
+    result = _telegram_api(
+        "sendMessage",
+        chat_id=config.telegram_chat_id,
+        text=text,
+        parse_mode=parse_mode,
+    )
+    return {"sent": True, "message_id": result.get("result", {}).get("message_id")}
+
+
 def answer_callback_query(callback_query_id: str, text: str):
     """Acknowledge a callback query (removes loading state on button)."""
     try:

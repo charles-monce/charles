@@ -115,14 +115,34 @@ Respond ONLY as JSON (no other text):
 
 def chat_response(message: str) -> str:
     """Generate a chat response using Haiku with memory context."""
+    manifest = load_manifest()
     recent_memories = get_recent_memories(20)
+    recent_responses = get_recent_responses(10)
 
-    context = ""
+    memories_text = ""
     if recent_memories:
-        context = "Here's what you remember:\n"
-        for m in recent_memories[-20:]:
-            context += f"- {m['text']} ({m['timestamp']})\n"
-        context += "\n"
+        memories_text = "Your memories (most recent):\n"
+        for m in recent_memories:
+            src = f" [{m['source']}]" if m.get("source") else ""
+            memories_text += f"- {m['text']}{src} ({m['timestamp']})\n"
 
-    prompt = f"{context}User says: {message}"
+    responses_text = ""
+    if recent_responses:
+        responses_text = "What Charles Dana has told you before:\n"
+        for r in recent_responses:
+            responses_text += f"- {r['response']} (re: {r['message_summary']})\n"
+
+    prompt = f"""You are "charles" — Charles Dana's personal assistant bot.
+You live at charles.aws.monce.ai. You talk casual, short, helpful.
+You remember everything people tell you and you use your memories to answer.
+When Charles Dana talks to you on Telegram, you're talking to your boss directly — be natural, not robotic.
+
+Charles Dana's rules:
+{manifest}
+
+{responses_text}
+
+{memories_text}
+
+Charles Dana says: {message}"""
     return _call_haiku(prompt)
